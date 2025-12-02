@@ -187,7 +187,3 @@ This repository is a lightweight, engineering-oriented reimplementation built on
 - Official code repository: https://github.com/Xiaobin-Rong/gtcrn
 
 If you use GTCRN-Light v3 in academic work, please consider citing both the original GTCRN paper and this repository.
-
-## 9. License
-
-Choose a license that matches your plan (for example, MIT, Apache-2.0, or GPL-3.0), update this section, and add a `LICENSE` file accordingly.
