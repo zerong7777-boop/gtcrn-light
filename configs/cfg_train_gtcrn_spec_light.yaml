@@ -1,0 +1,107 @@
+# =======================
+# GTCRN spec-domain @ VoiceBank-DEMAND (16 kHz)
+# =======================
+
+network_config:
+  width_mult: 1.0          # 指标优先，先给 1.0；后续可 0.75/0.5
+  use_two_dpgrnn: true     # 开双层时序记忆，稳定提升 PESQ/STOI
+
+# DDP: 实际以 -D 覆盖，这里给默认占位
+DDP:
+  world_size: 1
+
+exp_name: GTCRN_SPEC_VBD16k
+save_dir: ${ROOT}/audio/SEtrain/runs/gtcrn_spec_vbd
+samplerate: 16000
+
+
+
+
+# ===== 数据集（频谱版）=====
+train_dataset:
+  scp_path:  /home/jgzn/PycharmProjects/RZ/danzi/audio/data/lists/train.scp
+  fs: 16000
+  length_in_seconds: 4
+  n_fft: 512
+  hop_len: 256
+  win_len: 512
+  random_start_point: true
+  num_data_per_epoch: 10000
+  train: true
+
+validation_dataset:
+  scp_path:  /home/jgzn/PycharmProjects/RZ/danzi/audio/data/lists/valid.scp
+  fs: 16000
+  length_in_seconds: 4
+  n_fft: 512
+  hop_len: 256
+  win_len: 512
+  random_start_point: false
+  train: false
+
+train_dataloader:
+  batch_size: 8
+  num_workers: 4
+  drop_last: true
+  pin_memory: true
+
+validation_dataloader:
+  batch_size: 4
+  num_workers: 4
+  pin_memory: true
+
+# ===== 模型（频谱核心网络）=====
+model:
+  name: GTCRN   # 确保 models/__init__.py = from .gtcrn import GTCRN
+
+# ===== 优化 & 调度（step 级）=====
+optimizer:
+  lr: 1.0e-3
+  weight_decay: 0.0
+
+scheduler:
+  kwargs:
+    warmup_steps: 2500
+    decay_until_step: 75000
+    max_lr: 1.0e-3
+    min_lr: 1.0e-5
+  update_interval: step
+  use_plateau: false
+
+# ===== 频谱损失（RI + Mag）=====
+FFT:
+  n_fft: 512
+  hop_length: 256
+  win_length: 512
+
+loss:
+  n_fft: ${FFT.n_fft}
+  hop_len: ${FFT.hop_length}
+  win_len: ${FFT.win_length}
+  compress_factor: 0.3
+  eps: 1.0e-12
+  lamda_ri: 30.0
+  lamda_mag: 70.0
+
+# ===== 训练通用（train_my_spec.py 读取此块）=====
+trainer:
+  epochs: 100
+  save_checkpoint_interval: 1
+  clip_grad_norm_value: 3.0
+  exp_path: /home/jgzn/PycharmProjects/RZ/danzi/audio/SEtrain/exp_gtcrn_spec_vbd
+  log_interval: 100
+  val_interval: 1
+  resume: false
+  resume_datetime: 2025-11-10-00h00m   # 仅在 resume:true 时生效
+
+
+ablation:
+  shape_fix: false         # 新网络严格守形，无需再对齐
+  compute_pesq: true       # 验证期计算 PESQ，便于早停/选最优
+
+freeze:
+  encoder: false
+  dpgrnn:  false
+  decoder: false
+
+debug: False

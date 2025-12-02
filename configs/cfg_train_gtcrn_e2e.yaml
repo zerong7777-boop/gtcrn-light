@@ -1,0 +1,90 @@
+# =======================
+# GTCRN end-to-end @ VoiceBank-DEMAND (28spk, 16 kHz)
+# 路径按你截图：~/PycharmProjects/RZ/danzi/audio
+# 启动示例：
+#   cd ~/PycharmProjects/RZ/danzi/audio/SEtrain
+#   python train.py -C configs/cfg_train_gtcrn_e2e.yaml -D 0        # 单卡
+#   python train.py -C configs/cfg_train_gtcrn_e2e.yaml -D 0,1      # 双卡
+# =======================
+
+# --------- 模型（端到端 GTCRN 的 __init__ 参数）---------
+network_config:
+  n_fft: 512
+  hop_len: 256
+  win_len: 512
+
+# --------- DDP 信息（实际以 -D 覆盖；此处仅占位）---------
+DDP:
+  world_size: 1
+
+# --------- 优化与学习率计划（按“步”更新）---------
+optimizer:
+  lr: 1.0e-3
+  weight_decay: 0.0
+
+scheduler:
+  # WarmupLR(optimizer, **kwargs) 在 train.py 中被直接调用
+  kwargs:
+    # 以 VBD 训练集为例：若 train_dataset.num_data_per_epoch=10000，bs=8
+    # 每个 epoch 约 1250 step。这里设 2 个 epoch 预热、60 个 epoch 衰减至最小 lr。
+    warmup_steps: 2500
+    decay_until_step: 75000
+    max_lr: 1.0e-3
+    min_lr: 1.0e-5
+  update_interval: step
+  use_plateau: false
+
+# --------- 频谱参数（供损失内的 STFT 使用）---------
+FFT:
+  n_fft: 512
+  hop_length: 256
+  win_length: 512
+
+# --------- 损失函数（RI+Mag 组合；与 train.py 的 Loss(**loss) 适配）---------
+loss:
+  n_fft: ${FFT.n_fft}
+  hop_len: ${FFT.hop_length}
+  win_len: ${FFT.win_length}
+  compress_factor: 0.3
+  eps: 1.0e-12
+  lamda_ri: 30.0
+  lamda_mag: 70.0
+
+# --------- 数据集（基于我们改好的 PairWavDataset）---------
+train_dataset:
+  scp_path:  /home/jgzn/PycharmProjects/RZ/danzi/audio/data/lists/train.scp
+  fs: 16000
+  length_in_seconds: 4          # 先用 4s，显存友好；稳定后可提到 6~8s
+  random_start_point: true
+  num_data_per_epoch: 10000     # 每轮随机采样 1 万段（可按需增减或删除该项）
+  train: true
+
+train_dataloader:
+  batch_size: 8
+  num_workers: 4
+  drop_last: true
+  pin_memory: true
+
+validation_dataset:
+  scp_path:  /home/jgzn/PycharmProjects/RZ/danzi/audio/data/lists/valid.scp
+  fs: 16000
+  length_in_seconds: 4
+  random_start_point: false
+  train: false
+
+validation_dataloader:
+  batch_size: 4
+  num_workers: 4
+  pin_memory: true
+
+# --------- 采样率（train.py 在保存样例/评测用到）---------
+samplerate: 16000
+
+# --------- 训练流程 ----------
+trainer:
+  epochs: 100
+  save_checkpoint_interval: 1
+  clip_grad_norm_value: 3.0
+  exp_path: /home/jgzn/PycharmProjects/RZ/danzi/audio/SEtrain/exp_gtcrn_vbd
+  resume: false
+  resume_datetime: 2025-11-09-00h00m   # 仅在 resume:true 时生效
