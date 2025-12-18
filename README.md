@@ -186,4 +186,15 @@ This repository is a lightweight, engineering-oriented reimplementation built on
 - Xiaobin Rong *et al.*, “GTCRN: A Speech Enhancement Model Requiring Ultralow Computational Resources,” ICASSP 2024.  
 - Official code repository: https://github.com/Xiaobin-Rong/gtcrn
 
+
+
+## 9. Citation
 If you use GTCRN-Light v3 in academic work, please consider citing both the original GTCRN paper and this repository.
+
+```bibtex
+@misc{awesome_freq_medimg,
+  title  = {GTCRN-Light},
+  author = {Ze Rong},
+  year   = {2025},
+  url    = {https://github.com/zerong7777-boop/gtcrn-light}
+}
