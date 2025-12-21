@@ -192,7 +192,7 @@ This repository is a lightweight, engineering-oriented reimplementation built on
 If you use GTCRN-Light v3 in academic work, please consider citing both the original GTCRN paper and this repository.
 
 ```bibtex
-@misc{awesome_freq_medimg,
+@misc{gtcrnlight,
   title  = {GTCRN-Light},
   author = {Ze Rong},
   year   = {2025},
