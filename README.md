@@ -189,7 +189,7 @@ This repository is a lightweight, engineering-oriented reimplementation built on
 
 
 ## 9. Citation
-This work main thanks to 
+This work main thanks to https://github.com/lililili60
 
 If you use this repo in academic work, please consider citing both the original GTCRN paper and this repository.
 
